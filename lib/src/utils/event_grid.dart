@@ -15,35 +15,32 @@ class EventGrid {
 
   /// Processes all display properties added to the grid.
   void processEvents(double hoursColumnWidth, double eventsColumnWidth) {
-    List<List<EventDrawProperties>> columns = [];
+    // Sort draw properties by start time
+    //drawPropertiesList.sort((a, b) => a.start!.compareTo(b.start!));
+
+    List<EventDrawProperties> column = [];
     DateTime? lastEventEnding;
+
     for (EventDrawProperties drawProperties in drawPropertiesList) {
+      // Check for collision with the last event ending
       if (lastEventEnding != null && drawProperties.start!.isAfter(lastEventEnding)) {
-        packEvents(columns, hoursColumnWidth, eventsColumnWidth);
-        columns.clear();
-        lastEventEnding = null;
+        // If a collision is detected, pack events in the column and clear it
+        packEvents([column], hoursColumnWidth, eventsColumnWidth);
+        column.clear();
       }
 
-      bool placed = false;
-      for (List<EventDrawProperties> column in columns) {
-        if (!column.last.collidesWith(drawProperties)) {
-          column.add(drawProperties);
-          placed = true;
-          break;
-        }
-      }
+      // Add the draw property to the column
+      column.add(drawProperties);
 
-      if (!placed) {
-        columns.add([drawProperties]);
-      }
-
+      // Update the last event ending time
       if (lastEventEnding == null || drawProperties.end!.compareTo(lastEventEnding) > 0) {
         lastEventEnding = drawProperties.end;
       }
     }
 
-    if (columns.isNotEmpty) {
-      packEvents(columns, hoursColumnWidth, eventsColumnWidth);
+    // Pack events in the column after processing all draw properties
+    if (column.isNotEmpty) {
+      packEvents([column], hoursColumnWidth, eventsColumnWidth);
     }
   }
 

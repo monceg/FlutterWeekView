@@ -305,13 +305,28 @@ class _DayViewState extends ZoomableHeadersWidgetState<DayView> {
       if (gridGranularity > Duration.zero) {
         newEventEnd = roundTimeToFitGrid(newEventEnd, gridGranularity: gridGranularity);
       }
-      event.end = newEventEnd;
+       bool overlap = false;
+      for (var otherEvent in events) {
+        if (otherEvent != event && eventsOverlap(newEventEnd, otherEvent.start)) {
+          overlap = true;
+          break;
+        }
+      }
+
+      // If there's no overlap, update the event's end time
+      if (!overlap) {
+        event.end = newEventEnd;
+      }
     }
 
     setState(() {
       reset();
       createEventsDrawProperties();
     });
+  }
+
+  bool eventsOverlap(DateTime newEnd, DateTime otherStart) {
+    return newEnd.isAfter(otherStart);
   }
 
   /// Creates the background widgets that should be added to a stack.
